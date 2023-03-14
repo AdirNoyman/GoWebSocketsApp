@@ -1,16 +1,57 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/CloudyKit/jet/v6"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 )
 
 var views = jet.NewSet(jet.NewOSFileSystemLoader("./html"), jet.InDevelopmentMode())
 
+var upgradeConnection = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	// Suppose to check if the origin of the initial request is equal to current incoming request
+	CheckOrigin: func(r *http.Request) bool { return true },
+}
+
 func Home(w http.ResponseWriter, r *http.Request) {
 
 	err := renderPage(w, "home.jet", nil)
+	if err != nil {
+
+		log.Println("There was an error 😩", err)
+
+	}
+
+}
+
+// WebsocketJsonResponse defines the response sent back from the websocket
+type WebsocketJsonResponse struct {
+	Action      string `json:"action"`
+	Message     string `json:"message"`
+	MessageType string `json:"message_type"`
+}
+
+// WebsocketEndPoint upgrades a "regular" connection to websocket level
+func WebsocketEndPoint(w http.ResponseWriter, r *http.Request) {
+
+	// The third argument is the response header
+	ws, err := upgradeConnection.Upgrade(w, r, nil)
+	if err != nil {
+
+		log.Println("There was an error upgrading the connection 😩", err)
+
+	}
+
+	fmt.Println("Client connected to web socket end point 🤟")
+
+	var response WebsocketJsonResponse
+	response.Message = `<em><small>Connected to server</em></small>`
+
+	err = ws.WriteJSON(response)
 	if err != nil {
 
 		log.Println("There was an error 😩", err)
