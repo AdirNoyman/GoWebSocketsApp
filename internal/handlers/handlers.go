@@ -28,11 +28,24 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// WebsocketJsonResponse defines the response sent back from the websocket
+type WebSocketConnection struct {
+	// The Conn type represents a WebSocket connection
+	*websocket.Conn
+}
+
+// WebsocketJsonResponse defines the response sent back from the websocket to the client
 type WebsocketJsonResponse struct {
 	Action      string `json:"action"`
 	Message     string `json:"message"`
 	MessageType string `json:"message_type"`
+}
+
+// WebsocketPayload defines the response sent from the client to the websocket(server)
+type WebsocketPayload struct {
+	Action     string              `json:"action"`
+	Username   string              `json:"username"`
+	Message    string              `json:"message"`
+	Connection WebSocketConnection `json:"-"`
 }
 
 // WebsocketEndPoint upgrades a "regular" connection to websocket level
